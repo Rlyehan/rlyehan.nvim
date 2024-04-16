@@ -1,0 +1,29 @@
+name: Test flake
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: nix develop -c just check
+      - run: nix develop -c just cache-inputs
+      - run: nix develop -c just cache-shell
+
+  build:
+    needs:
+      - check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        profile:
+          - default
+          - neovim
+    steps:
+      - uses: actions/checkout@v4
+      - run: nix develop -c just cache-build "${{ matrix.profile }}"
